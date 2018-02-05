@@ -19,6 +19,13 @@
 #         5. check_web_status - Checks smartcashd daemon port, verifies if its communicable from external internet.
 #         6. check_system_stats - Checks your server's CPU and MEMORY stats and verify if its within reasonable thresholds
 #         7. check_disk_space - Checks each filesystem is within space thresholds ( default : not less than 50% ; free space > 12GB )
+#
+#  INSTRUCTIONS
+#  1. Download this script :   
+#         $ wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/smartnode_health_check.sh
+#  2. This script can be ran either are root user or smartadmin user. Run the script :
+#         $ bash ./smartnode_health_check.sh
+#
 
 PATH=/bin:/usr/bin:/sbin:$PATH
 export PATH
