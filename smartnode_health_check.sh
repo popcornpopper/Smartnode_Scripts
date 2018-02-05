@@ -7,11 +7,12 @@
 #               Not intended for incomplete Smartnode Installations.
 #
 #
-#  Author : popcornpopper ( bsmart ) . Created Feb 4, 2018
+#  Author : popcornpopper  . Created Feb 4, 2018
 
 PATH=/bin:/usr/bin:/sbin:$PATH
 export PATH
 
+######   FUNCTIONS
 check_disk_space () {
 
 
@@ -71,12 +72,16 @@ check_cmd_pattern() {
 }
 
 check_crons () {
+ if [ "`whoami`" = "root" ] ; then
+       CRONTAB_CMD="cat /var/spool/cron/crontabs/${SMARTCASH_HOME_DIR_OWNER}";
+ else  CRONTAB_CMD="crontab -l"
+ fi
 
- check_cmd_pattern 'crontab -l' "Check cron script for auto start smartcashd after reboot is scheduled"  smartcashd reboot
- check_cmd_pattern 'crontab -l' "Check cron script for auto upgrade script is scheduled" upgrade.sh
- check_cmd_pattern 'crontab -l' "Check cron script to check/fix hung smartcashd is scheduled " checkdaemon.sh
- check_cmd_pattern 'crontab -l' "Check cron script to clear debug log is scheduled"  clearlog.sh
- check_cmd_pattern 'crontab -l' "Check cron script to auto restart smartcashd when down is scheduled"  makerun.sh
+ check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto start smartcashd after reboot is scheduled"  smartcashd reboot
+ check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto upgrade script is scheduled" upgrade.sh
+ check_cmd_pattern "$CRONTAB_CMD" "Check cron script to check/fix hung smartcashd is scheduled " checkdaemon.sh
+ check_cmd_pattern "$CRONTAB_CMD" "Check cron script to clear debug log is scheduled"  clearlog.sh
+ check_cmd_pattern "$CRONTAB_CMD" "Check cron script to auto restart smartcashd when down is scheduled"  makerun.sh
 }
 
 
@@ -86,14 +91,16 @@ check_cmd_pattern "ps -ef" "Check if smartcashd daemon process is running" smart
 
 
 check_sc_status () {
-  check_cmd_pattern  'smartcash-cli smartnode status' "Check smartcash-cli smartnode status" "Smartnode successfully started"
+ if [ "`whoami`" = "root" ] ; then
+       echo "smartcash-cli smartnode status" > /tmp/sn.cmd.$$.txt ; chmod 755  /tmp/sn.cmd.$$.txt
+       check_cmd_pattern  "sudo su ${SMARTCASH_HOME_DIR_OWNER} -c /tmp/sn.cmd.$$.txt" "Check smartcash-cli smartnode status" "Smartnode successfully started"
+       rm -f  /tmp/sn.cmd.$$.txt
+ else  check_cmd_pattern  "smartcash-cli smartnode status" "Check smartcash-cli smartnode status" "Smartnode successfully started"
+ fi
 }
 
 check_sc_port () {
-  if [ "`whoami`" != root ]; then
-        check_cmd_pattern 'sudo iptables -L' "Check if your network allows traffic to SN port" "dpt:9678" "ACCEPT"
-  else check_cmd_pattern 'iptables -L' "Check if your network allows traffic to SN port" "dpt:9678" "ACCEPT";
-  fi
+  check_cmd_pattern "$SUDO iptables -L" "Check if your network allows inbound traffic to SN port" "dpt:9678" "ACCEPT"
   check_cmd_pattern 'netstat -an' "Check if SN daemon port is listening" "9678" "LISTEN"
 }
 
@@ -103,13 +110,14 @@ get_pub_ip() {
 
 check_web_status() {
   pub_ip="`get_pub_ip`"
-  wget -o  /tmp/wget.sn_webtest.txt --timeout=1 --waitretry=0 --retry-connrefused --tries=2  ${pub_ip}:9678 > /dev/null 2>&1
-  check_cmd_pattern "cat /tmp/wget.sn_webtest.txt" "Check if SN daemon port is reachable from external internet" "connected"
+  wget -o  /tmp/wget.sn_webtest.$$.txt --timeout=1 --waitretry=0 --retry-connrefused --tries=2  ${pub_ip}:9678 > /dev/null 2>&1
+  check_cmd_pattern "cat /tmp/wget.sn_webtest.$$.txt" "Check if SN daemon port is reachable from external internet" "connected"
+  rm -f /tmp/wget.sn_webtest.$$.txt
 }
 
 check_system_stats() {
 
-mtotal="`free -m  |grep ^Mem| awk '{ print $2 }'|tr -d '\012'`"
+mtotal="`free -m |grep ^Mem | awk '{ print $2 }'|tr -d '\012'`"
 mavail="`free -m |grep ^Mem | awk '{ print $7 }'|tr -d '\012'`"
 mpct=`perl -e "use POSIX qw(round);print round(100*( $mavail / $mtotal ))"`
 
@@ -132,6 +140,13 @@ fi
 
 }
 
+smartcash_homedir () {
+  smartcash_dir=`ls -1d /.smartcash /home/smartadmin/.smartcash  2> /dev/null`
+  dirname $smartcash_dir | tr -d '\012'
+}
+
+
+
 ####### MAIN #############
 ## TUNABLES
 ## System Thresholds
@@ -142,12 +157,26 @@ CPU_THRESHOLD=95
 FREE_PCT_THRESHOLD=50
 FREE_SIZE_THRESHOLD=12000000  # 12GB
 
+###### Detect if this smartcashd was installed as root user or smartadmin
+SMARTCASH_HOME_DIR="`smartcash_homedir`"
+if [ -z "$SMARTCASH_HOME_DIR" ]; then echo "ERROR: Unable to locate Smartcash Application directory. "; exit 1; fi
+SMARTCASH_HOME_DIR_OWNER="`ls -ld $SMARTCASH_HOME_DIR|head -1 | awk '{ print $3 }' | tr -d '\012'`"
+
+###### Checking if root user is running this program
+if [ "`whoami`" != "root" ]; then
+     SUDO="sudo"
+else SUDO=""
+fi
 
 echo "
-SmartNode Health Check Analysis report
+SmartNode Health Check Analysis report ( running as `whoami` )
 ---------------------------------------------------------
 "
 
+#echo "SMARTCASH_HOME_DIR: $SMARTCASH_HOME_DIR"
+#echo "SMARTCASH_HOME_DIR_OWNER: $SMARTCASH_HOME_DIR_OWNER"
+#echo "SUDO: $SUDO"
+#exit
 ########## Performing Smartcashd Tests ##################"
 check_smartcashd_process
 check_sc_status
@@ -163,7 +192,7 @@ echo "
 check_disk_space
 
 echo "
-Scripts by : popcornpopper ( bsmart )
+Scripts by : popcornpopper
 Report Date: `/bin/date`
 Tea me up! (SMART) ScgbsLn4GSfvzEHWZhugTiyhFHejHAUcXD (ETH) 0x0c78d711b216082209a54f13065886311f94ce77
 "
