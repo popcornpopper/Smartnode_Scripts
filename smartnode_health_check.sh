@@ -32,8 +32,6 @@ export PATH
 
 ######   FUNCTIONS
 check_disk_space () {
-
-
    FAIL=0
    IFS=\$
    for fspct in `df -k  |grep -v ^Filesystem | awk '{ print $5" "$4" "$6"\$" }' | sort -nr | tr -d '\012' `
@@ -51,26 +49,20 @@ check_disk_space () {
       fi
    fi
 
-
    sizemb=`perl -e "use POSIX qw(round);print round(( $size / 1000 ))"`
    if [ $FAIL -eq 1 ];then
          echo "FAIL: $fs fs has ${sizemb}Megs(${pct}% used) , this has breached thresholds of (must be < ${FREE_PCT_THRESHOLD}% + >12GB)"
    else  echo "OK: $fs fs has ${sizemb}Megs(${pct}% used) , within thresholds (must be < ${FREE_PCT_THRESHOLD}% + >12GB)"
    fi
    done
-
-
 }
 
 
 check_cmd_pattern() {
-
    command="$1"
    desc="$2"
    pattern1="$3"
    prefilter="$4"
-
-  # echo "$command $desc $exclude $pattern1 $prefilter"
 
    if [ -z "$prefilter" ] ; then
        $command  |grep -v grep | grep -v ^\# | grep -w "${pattern1}" > /dev/null 2>&1
@@ -86,7 +78,6 @@ check_cmd_pattern() {
       echo "     This test failed : $command | grep -w \"${pattern1}\"  "
       return 1
    fi
-
 }
 
 check_crons () {
@@ -188,13 +179,9 @@ fi
 
 echo "
 SmartNode Health Check Analysis report ( running as `whoami` )
----------------------------------------------------------
+--------------------------------------------------------------
 "
 
-#echo "SMARTCASH_HOME_DIR: $SMARTCASH_HOME_DIR"
-#echo "SMARTCASH_HOME_DIR_OWNER: $SMARTCASH_HOME_DIR_OWNER"
-#echo "SUDO: $SUDO"
-#exit
 ########## Performing Smartcashd Tests ##################"
 check_smartcashd_process
 check_sc_status
