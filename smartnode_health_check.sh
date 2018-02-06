@@ -6,8 +6,8 @@
 #  Assumptions: This script is intended to be run on a completely configured Smartnode.
 #               Not intended for incomplete Smartnode Installations.
 #  Author : popcornpopper  . Created Feb 4, 2018
-#
-#   smartnode_health_check.sh - 
+#  
+#  smartnode_health_check.sh - 
 #      Provides a robust end-to-end verification of a Smartnode. 
 #      Performs the following checks:
 #         1. check_smartcashd_process - Checks if your smartcashd daemon process is running
@@ -29,7 +29,8 @@ PATH=/bin:/usr/bin:/sbin:$PATH
 export PATH
 
 ######   FUNCTIONS
-check_disk_space () {
+check_disk_space () { 
+   # check_disk_space v1.2 - popcornpopper
    FAIL=0
    IFS=\$
    for fspct in `df -k  |grep -v ^Filesystem | awk '{ print $5" "$4" "$6"\$" }' | sort -nr | tr -d '\012' `
@@ -57,6 +58,7 @@ check_disk_space () {
 
 
 check_cmd_pattern() {
+   # check_cmd_pattern v1.1 - popcornpopper
    command="$1"
    desc="$2"
    pattern1="$3"
@@ -112,10 +114,12 @@ check_sc_port () {
 }
 
 get_pub_ip() {
-/sbin/ifconfig |grep 'inet addr' |grep -v 127.0.0.1 | awk '{ print $2 }' |awk -F: '{ print $2 }' | tr -d '\012'
+   # get_pub_ip v1.0 - popcornpopper
+   /sbin/ifconfig |grep 'inet addr' |grep -v 127.0.0.1 | awk '{ print $2 }' |awk -F: '{ print $2 }' | tr -d '\012'
 }
 
 check_web_status() {
+  # check_web_status v1.0 - popcornpopper
   pub_ip="`get_pub_ip`"
   wget -o  /tmp/wget.sn_webtest.$$.txt --timeout=1 --waitretry=0 --retry-connrefused --tries=2  ${pub_ip}:9678 > /dev/null 2>&1
   check_cmd_pattern "cat /tmp/wget.sn_webtest.$$.txt" "Check if SN daemon port is reachable from external internet" "connected"
@@ -123,27 +127,27 @@ check_web_status() {
 }
 
 check_system_stats() {
+   # check_system_stats v1.2 - popcornpopper
+   mtotal="`free -m |grep ^Mem | awk '{ print $2 }'|tr -d '\012'`"
+   mavail="`free -m |grep ^Mem | awk '{ print $7 }'|tr -d '\012'`"
+   mpct=`perl -e "use POSIX qw(round);print round(100*( $mavail / $mtotal ))"`
 
-mtotal="`free -m |grep ^Mem | awk '{ print $2 }'|tr -d '\012'`"
-mavail="`free -m |grep ^Mem | awk '{ print $7 }'|tr -d '\012'`"
-mpct=`perl -e "use POSIX qw(round);print round(100*( $mavail / $mtotal ))"`
-
-if [ $mpct -lt $MEM_THRESHOLD ]; then
+   if [ $mpct -lt $MEM_THRESHOLD ]; then
      echo "OK: Mem usage ${mpct}% under threshold(${MEM_THRESHOLD}%)"
-else echo "FAIL: Mem usage ${mpct}% above threshold(${MEM_THRESHOLD}%)"
-fi
+   else echo "FAIL: Mem usage ${mpct}% above threshold(${MEM_THRESHOLD}%)"
+   fi
 
-cpua=0
-for cpuv in `vmstat 1 5 | tail -5 | awk '{ print $15 }'`
-do
-  cpua=`expr $cpua + $cpuv`
-done
-  cpuavg=`perl -e "use POSIX qw(round);print 100-round(( $cpua / 5 ))"`
+   cpua=0
+   for cpuv in `vmstat 1 5 | tail -5 | awk '{ print $15 }'`
+   do
+     cpua=`expr $cpua + $cpuv`
+   done
+     cpuavg=`perl -e "use POSIX qw(round);print 100-round(( $cpua / 5 ))"`
 
-if [ $cpuavg -lt $CPU_THRESHOLD ]; then
-     echo "OK: CPU usage ${cpuavg}% under threshold(${CPU_THRESHOLD}%)"
-else echo "FAIL: CPU usage ${cpuavg}% above threshold(${CPU_THRESHOLD}%)"
-fi
+   if [ $cpuavg -lt $CPU_THRESHOLD ]; then
+        echo "OK: CPU usage ${cpuavg}% under threshold(${CPU_THRESHOLD}%)"
+   else echo "FAIL: CPU usage ${cpuavg}% above threshold(${CPU_THRESHOLD}%)"
+   fi
 
 }
 
