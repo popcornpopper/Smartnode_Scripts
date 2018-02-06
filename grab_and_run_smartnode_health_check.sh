@@ -1,6 +1,6 @@
 # Wrapper script
 #
-# Instructions:
+# Instructions: Download this script only once. This will not change.
 # Run below command:
 #    1. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_run_smartnode_health_check.sh
 #    2. sh grab_and_run_smartnode_health_check.sh
