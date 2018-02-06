@@ -6,20 +6,20 @@
 #  Assumptions: This script is intended to be run on a completely configured Smartnode.
 #               Not intended for incomplete Smartnode Installations.
 #  Author : popcornpopper  . Created Feb 4, 2018
-#  
-#  smartnode_health_check.sh - 
-#      Provides a robust end-to-end verification of a Smartnode. 
+#
+#  smartnode_health_check.sh -
+#      Provides a robust end-to-end verification of a Smartnode.
 #      Performs the following checks:
 #         1. check_smartcashd_process - Checks if your smartcashd daemon process is running
 #         2. check_sc_status - Checks status of your smartcashd. Runs smartcash-cli smartnode status
 #         3. check_crons - Checks all official cron scripts if you have them scheduled.
-#         4. check_sc_port - Checks smartcashd daemon port to ensure its listening and its not blocked by internal/external firewalls. 
+#         4. check_sc_port - Checks smartcashd daemon port to ensure its listening and its not blocked by internal/external firewalls.
 #         5. check_web_status - Checks smartcashd daemon port, verifies if its communicable from external internet.
 #         6. check_system_stats - Checks your server's CPU and MEMORY stats and verify if its within reasonable thresholds
 #         7. check_disk_space - Checks each filesystem is within space thresholds ( default : not less than 50% ; free space > 12GB )
 #
 #  INSTRUCTIONS
-#  1. Download this script :   
+#  1. Download this script :
 #         $ wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/smartnode_health_check.sh
 #  2. This script can be ran either as root user or smartadmin user. Run below command :
 #         $ bash ./smartnode_health_check.sh
@@ -29,7 +29,7 @@ PATH=/bin:/usr/bin:/sbin:$PATH
 export PATH
 
 ######   FUNCTIONS
-check_disk_space () { 
+check_disk_space () {
    # check_disk_space v1.2 - popcornpopper
    FAIL=0
    IFS=\$
@@ -158,6 +158,56 @@ smartcash_homedir () {
 
 
 
+
+download_official_script () {
+  script_name="$1"
+  rm -f ${TMPDIR}/${script_name} 2> /dev/null
+  wget -O ${TMPDIR}/${script_name} https://raw.githubusercontent.com/SmartCash/smartnode/master/${script_name} > /dev/null 2>&1
+}
+
+
+get_cron_script_fname () {
+  script_name="$1"
+
+  if [ "`whoami`" = "root" ] ; then
+        CRONTAB_CMD="cat /var/spool/cron/crontabs/${SMARTCASH_HOME_DIR_OWNER}";
+  else  CRONTAB_CMD="crontab -l"
+  fi
+
+  ${CRONTAB_CMD} | grep -v "^\#" | grep -w "$script_name" | awk '{ print $6 }'
+}
+
+scriptit_and_run() {
+   script_name="$1"
+
+   cron_script="`get_cron_script_fname \"$script_name\"`"
+   if [ ! -z "$cron_script" ]
+   then
+      echo "diff ${cron_script} ${TMPDIR}/${script_name} " > /tmp/scriptit.$$
+      sh /tmp/scriptit.$$ >/dev/null 2>&1
+
+      if [ $? -eq 0 ]; then
+            echo "OK : Cron script $script_name is identical with official script" ;
+      else  echo "WARNING : Cron script $script_name is different from the official script" ;
+      fi
+      rm -f /tmp/scriptit.$$
+   else
+      echo "FAIL: Official $script_name is not scheduled in CRON"
+   fi
+}
+
+check_cron_scripts_if_official () {
+download_official_script clearlog.sh
+download_official_script checkdaemon.sh
+download_official_script makerun.sh
+download_official_script upgrade.sh
+
+scriptit_and_run clearlog.sh
+scriptit_and_run makerun.sh
+scriptit_and_run checkdaemon.sh
+scriptit_and_run upgrade.sh
+}
+
 ############## MAIN Routine #############
 ## TUNABLES
 ## System Thresholds
@@ -173,6 +223,9 @@ SMARTCASH_HOME_DIR="`smartcash_homedir`"
 if [ -z "$SMARTCASH_HOME_DIR" ]; then echo "ERROR: Unable to locate Smartcash Application directory. "; exit 1; fi
 SMARTCASH_HOME_DIR_OWNER="`ls -ld $SMARTCASH_HOME_DIR|head -1 | awk '{ print $3 }' | tr -d '\012'`"
 
+TMPDIR=/tmp/smartcash_official_scripts
+mkdir -p ${TMPDIR}
+
 ###### Checking if root user is running this program
 if [ "`whoami`" != "root" ]; then
      SUDO="sudo"
@@ -182,13 +235,15 @@ fi
 echo "
 SmartNode Health Check Analysis report ( running as `whoami` )
 --------------------------------------------------------------"
-if [ "`whoami`" = "smartadmin" ]; then echo "NOTE: You maybe prompted to input sudo password to run iptables command"; fi
-echo 
+if [ "`whoami`" = "smartadmin" ]; then echo "NOTE: Since you are running as smartadmin user , you maybe prompted to input sudo password to run iptables command"; fi
+echo
 
+echo "
 ########## Performing Smartcashd Tests ##################"
 check_smartcashd_process
 check_sc_status
-check_crons
+#check_crons
+check_cron_scripts_if_official
 
 echo "
 ########## Performing System Tests ##################"
@@ -199,6 +254,7 @@ check_system_stats
 echo "
 ########## Performing Disk Space Checks ##################"
 check_disk_space
+
 
 echo "
 Scripted by : popcornpopper
