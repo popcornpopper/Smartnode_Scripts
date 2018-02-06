@@ -179,7 +179,9 @@ echo "
 SmartNode Health Check Analysis report ( running as `whoami` )
 --------------------------------------------------------------"
 if [ "`whoami`" = "smartadmin" ]; then echo "NOTE: You maybe prompted to input sudo password to run iptables command"; fi
-echo
+echo "
+
+"
 
 ########## Performing Smartcashd Tests ##################"
 check_smartcashd_process
