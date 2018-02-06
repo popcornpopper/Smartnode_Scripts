@@ -5,13 +5,11 @@
 #  This script helps to quickly determine the root cause of Smartnode issues.
 #  Assumptions: This script is intended to be run on a completely configured Smartnode.
 #               Not intended for incomplete Smartnode Installations.
-#
-#
 #  Author : popcornpopper  . Created Feb 4, 2018
 #
 #   smartnode_health_check.sh - 
-#        Provides a robust end-to-end verification of a Smartnode. 
-#        Performs the following checks:
+#      Provides a robust end-to-end verification of a Smartnode. 
+#      Performs the following checks:
 #         1. check_smartcashd_process - Checks if your smartcashd daemon process is running
 #         2. check_sc_status - Checks status of your smartcashd. Runs smartcash-cli smartnode status
 #         3. check_crons - Checks all official cron scripts if you have them scheduled.
