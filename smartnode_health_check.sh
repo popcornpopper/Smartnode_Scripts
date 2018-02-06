@@ -156,7 +156,7 @@ smartcash_homedir () {
 
 
 
-####### MAIN #############
+############## MAIN Routine #############
 ## TUNABLES
 ## System Thresholds
 MEM_THRESHOLD=90
@@ -192,12 +192,13 @@ echo "
 check_sc_port
 check_web_status
 check_system_stats
+
 echo "
 ########## Performing Disk Space Checks ##################"
 check_disk_space
 
 echo "
-Scripts by : popcornpopper
-Report Date: `/bin/date`
+Scripted by : popcornpopper
+Report Date : `/bin/date`
 Tea me up! (SMART) ScgbsLn4GSfvzEHWZhugTiyhFHejHAUcXD (ETH) 0x0c78d711b216082209a54f13065886311f94ce77
 "
