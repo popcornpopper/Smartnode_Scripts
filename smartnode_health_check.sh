@@ -2,7 +2,7 @@
 #
 #  Smartnode Health Check script
 #
-#  Quickly determine the root cause of Smartnode issues.
+#  This script helps to quickly determine the root cause of Smartnode issues.
 #  Assumptions: This script is intended to be run on a completely configured Smartnode.
 #               Not intended for incomplete Smartnode Installations.
 #
