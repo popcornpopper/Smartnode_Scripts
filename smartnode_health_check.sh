@@ -23,7 +23,7 @@
 #  INSTRUCTIONS
 #  1. Download this script :   
 #         $ wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/smartnode_health_check.sh
-#  2. This script can be ran either are root user or smartadmin user. Run the script :
+#  2. This script can be ran either as root user or smartadmin user. Run below command :
 #         $ bash ./smartnode_health_check.sh
 #
 
