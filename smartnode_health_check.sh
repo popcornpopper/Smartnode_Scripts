@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#  Smartnode Health Check script
+#  Smartnode Health Check report v1.0
 #
 #  This script helps to quickly determine the root cause of Smartnode issues.
 #  Assumptions: This script is intended to be run on a completely configured Smartnode.
@@ -234,7 +234,7 @@ else SUDO=""
 fi
 
 echo -e "
-\e[30m\e[103m    SmartNode Health Check Analysis report    \e[49m\e[39m
+\e[30m\e[103m    SmartNode Health Check Analysis report v1.0   \e[49m\e[39m
 ----------------------------------------------"
 if [ "`whoami`" = "smartadmin" ]; then echo "NOTE: smartadmin user detected , you maybe prompted for sudo password to run iptables command"; fi
 echo
