@@ -13,10 +13,11 @@
 #         1. check_smartcashd_process - Checks if your smartcashd daemon process is running
 #         2. check_sc_status - Checks status of your smartcashd. Runs smartcash-cli smartnode status
 #         3. check_crons - Checks all official cron scripts if you have them scheduled.
-#         4. check_sc_port - Checks smartcashd daemon port to ensure its listening and its not blocked by internal/external firewalls.
-#         5. check_web_status - Checks smartcashd daemon port, verifies if its communicable from external internet.
-#         6. check_system_stats - Checks your server's CPU and MEMORY stats and verify if its within reasonable thresholds
-#         7. check_disk_space - Checks each filesystem is within space thresholds ( default : not less than 50% used ; free space > 12GB )
+#         4. check_cron_scripts_if_official - Checks cron scripts if they are identical to the official Smartcash Smartnode scripts 
+#         5. check_sc_port - Checks smartcashd daemon port to ensure its listening and its not blocked by internal/external firewalls.
+#         6. check_web_status - Checks smartcashd daemon port, verifies if its communicable from external internet.
+#         7. check_system_stats - Checks your server's CPU and MEMORY stats and verify if its within reasonable thresholds
+#         8. check_disk_space - Checks each filesystem is within space thresholds ( default : not less than 50% used ; free space > 12GB )
 #
 #  INSTRUCTIONS
 #  1. Download this script :
