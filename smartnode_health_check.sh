@@ -16,7 +16,7 @@
 #         4. check_sc_port - Checks smartcashd daemon port to ensure its listening and its not blocked by internal/external firewalls.
 #         5. check_web_status - Checks smartcashd daemon port, verifies if its communicable from external internet.
 #         6. check_system_stats - Checks your server's CPU and MEMORY stats and verify if its within reasonable thresholds
-#         7. check_disk_space - Checks each filesystem is within space thresholds ( default : not less than 50% ; free space > 12GB )
+#         7. check_disk_space - Checks each filesystem is within space thresholds ( default : not less than 50% used ; free space > 12GB )
 #
 #  INSTRUCTIONS
 #  1. Download this script :
@@ -25,6 +25,7 @@
 #         $ bash ./smartnode_health_check.sh
 #
 
+clear
 PATH=/bin:/usr/bin:/sbin:$PATH
 export PATH
 
@@ -50,8 +51,8 @@ check_disk_space () {
 
    sizemb=`perl -e "use POSIX qw(round);print round(( $size / 1000 ))"`
    if [ $FAIL -eq 1 ];then
-         echo "FAIL: $fs fs has ${sizemb}Megs(${pct}% used) , this has breached thresholds of (must be < ${FREE_PCT_THRESHOLD}% + >12GB)"
-   else  echo "OK: $fs fs has ${sizemb}Megs(${pct}% used) , within thresholds (must be < ${FREE_PCT_THRESHOLD}% + >12GB)"
+         echo -e "\e[91m[ FAIL ]\e[39m $fs fs has ${sizemb}M(${pct}% used)"
+   else  echo -e "\e[92m[ OK ]\e[39m $fs fs has ${sizemb}M(${pct}% used) "
    fi
    done
 }
@@ -72,9 +73,9 @@ check_cmd_pattern() {
    ret=$?
 
    if [ $ret -eq 0 ]; then
-      echo "OK: $desc : Test successful for $pattern1 " ; return 0;
+      echo -e "\e[92m[ OK ]\e[39m $desc : Test successful for $pattern1 " ; return 0;
    else
-      echo "FAIL: $desc : Test failed for  $pattern1 "
+      echo -e "\e[91m[ FAIL ]\e[39m $desc : Test failed for  $pattern1 "
       echo "     This test failed : $command | grep -w \"${pattern1}\"  "
       return 1
    fi
@@ -133,8 +134,8 @@ check_system_stats() {
    mpct=`perl -e "use POSIX qw(round);print round(100*( $mavail / $mtotal ))"`
 
    if [ $mpct -lt $MEM_THRESHOLD ]; then
-     echo "OK: Mem usage ${mpct}% under threshold(${MEM_THRESHOLD}%)"
-   else echo "FAIL: Mem usage ${mpct}% above threshold(${MEM_THRESHOLD}%)"
+     echo -e "\e[92m[ OK ]\e[39m Mem usage ${mpct}% under threshold(${MEM_THRESHOLD}%)"
+   else echo -e "\e[91m[ FAIL ]\e[39m Mem usage ${mpct}% above threshold(${MEM_THRESHOLD}%)"
    fi
 
    cpua=0
@@ -145,8 +146,8 @@ check_system_stats() {
      cpuavg=`perl -e "use POSIX qw(round);print 100-round(( $cpua / 5 ))"`
 
    if [ $cpuavg -lt $CPU_THRESHOLD ]; then
-        echo "OK: CPU usage ${cpuavg}% under threshold(${CPU_THRESHOLD}%)"
-   else echo "FAIL: CPU usage ${cpuavg}% above threshold(${CPU_THRESHOLD}%)"
+        echo -e "\e[92m[ OK ]\e[39m CPU usage ${cpuavg}% under threshold(${CPU_THRESHOLD}%)"
+   else echo -e "\e[91m[ FAIL ]\e[39m CPU usage ${cpuavg}% above threshold(${CPU_THRESHOLD}%)"
    fi
 
 }
@@ -187,12 +188,12 @@ scriptit_and_run() {
       sh /tmp/scriptit.$$ >/dev/null 2>&1
 
       if [ $? -eq 0 ]; then
-            echo "OK : Cron script $script_name is identical with official script" ;
-      else  echo "WARNING : Cron script $script_name is different from the official script" ;
+            echo -e "\e[92m[ OK ]\e[39m Cron script $script_name is identical with official script" ;
+      else  echo -e "\e[95m[ WARNING ]\e[39m Cron script $script_name is different from the official script" ;
       fi
       rm -f /tmp/scriptit.$$
    else
-      echo "FAIL: Official $script_name is not scheduled in CRON"
+      echo -e "\e[91m[ FAIL ]\e[39m Official $script_name is not scheduled in CRON"
    fi
 }
 
@@ -232,32 +233,38 @@ if [ "`whoami`" != "root" ]; then
 else SUDO=""
 fi
 
-echo "
-SmartNode Health Check Analysis report ( running as `whoami` )
---------------------------------------------------------------"
-if [ "`whoami`" = "smartadmin" ]; then echo "NOTE: Since you are running as smartadmin user , you maybe prompted to input sudo password to run iptables command"; fi
+echo -e "
+\e[30m\e[103m    SmartNode Health Check Analysis report    \e[49m\e[39m
+----------------------------------------------"
+if [ "`whoami`" = "smartadmin" ]; then echo "NOTE: smartadmin user detected , you maybe prompted for sudo password to run iptables command"; fi
 echo
 
 echo "
-########## Performing Smartcashd Tests ##################"
+########## Performing Smartcashd Tests ##################
+"
 check_smartcashd_process
 check_sc_status
 #check_crons
 check_cron_scripts_if_official
 
 echo "
-########## Performing System Tests ##################"
+########## Performing System Tests ##################
+"
+check_system_stats
 check_sc_port
 check_web_status
-check_system_stats
 
 echo "
 ########## Performing Disk Space Checks ##################"
+echo "Thresholds : Must be < ${FREE_PCT_THRESHOLD}% used + free space >12GB
+"
 check_disk_space
 
 
-echo "
-Scripted by : popcornpopper
-Report Date : `/bin/date`
+echo -e "
+Author :\e[44m popcornpopper \e[49m\e[39m "
+
+
+echo "Report Date : `/bin/date`
 Tea me up! (SMART) ScgbsLn4GSfvzEHWZhugTiyhFHejHAUcXD (ETH) 0x0c78d711b216082209a54f13065886311f94ce77
 "
