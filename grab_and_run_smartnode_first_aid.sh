@@ -8,7 +8,7 @@
 
 mkdir -p /tmp/smartnode_first_aid
 rm -f  /tmp/smartnode_first_aid/smartnode_first_aid.sh 2> /dev/null
-wget -O /tmp/smartnode_first_aid/smartnode_first_aid.sh https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/smartnode_first_aid.sh
+wget -O /tmp/smartnode_first_aid/smartnode_first_aid.sh https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/smartnode_first_aid.sh > /dev/null 2>&1
 bash /tmp/smartnode_first_aid/smartnode_first_aid.sh | tee /tmp/smartnode_first_aid/smartnode_first_aid_report.txt
 
 echo "Smartnode First Aid Report : /tmp/smartnode_first_aid/smartnode_first_aid_report.txt"
