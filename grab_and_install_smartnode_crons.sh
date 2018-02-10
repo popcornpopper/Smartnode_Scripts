@@ -6,9 +6,7 @@
 #
 # INSTRUCTIONS , run below commands:
 #   1. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
-#   2. sh get_and_install_smartnode_crons.sh [SmartNode Directory] .
-#      - If you installed smartnode with smartadmin, your command will be : bash grab_and_install_smartnode_crons.sh "/home/smartadmin"
-#      - If you installed using bash installer , your command will be : bash grab_and_install_smartnode_crons.sh "/"
+#   2. bash grab_and_install_smartnode_crons.sh
 #
 # Author : popcornpopper
 # Created: Feb 10, 2018
@@ -90,4 +88,3 @@ echo "If you want to revert back , run below commands in the following order :
   3.  mv ${SMARTCASH_BASE}/smartnode_prev/*.sh  ${SMARTCASH_BASE}/smartnode 2> /dev/null
   4.  rmdir ${SMARTCASH_BASE}/smartnode_prev/
 "
-
