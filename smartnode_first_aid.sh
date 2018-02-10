@@ -2,7 +2,7 @@
 #
 #  Smartnode First Aid v1.0
 #
-#  This script helps to quickly determine the root cause of Smartnode issues.
+#  This script helps to quickly determine the root cause of Smartnode issues. Provides tips on how to resolve issues.
 #  Assumptions: This script is intended to be run on a completely configured Smartnode.
 #               Not intended for incomplete Smartnode Installations.
 #  Author : popcornpopper  . Created Feb 4, 2018
