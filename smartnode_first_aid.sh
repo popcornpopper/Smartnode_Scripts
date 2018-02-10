@@ -354,7 +354,7 @@ echo -e "
 \e[95m WARNING : ${WARNING_FLAG}\e[39m
 \e[91m FAIL    : ${FAIL_FLAG}\e[39m
 
-#### Thresholds #
+#### Thresholds # You may change these thresholds per your liking within the script.
 Memory Utilization Threshold  : Must not go beyond ${MEM_THRESHOLD}%
 CPU Utilization  Threshold    : Must not go beyond ${CPU_THRESHOLD}%
 
