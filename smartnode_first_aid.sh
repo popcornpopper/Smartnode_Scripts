@@ -262,16 +262,16 @@ scriptit_and_run() {
             echo -e "\e[92m[  OK  ]\e[39m Cron script $script_name is identical with official script and scheduled in CRON" ;
             OK_FLAG=`expr $OK_FLAG + 1`
       else  echo -e "\e[95m[ WARNING ]\e[39m Cron script $script_name is different from the official script. $script_name is scheduled in CRON" ;
-            echo -e "\e[93m[ TIP  ]\e[39m Download and configure the latest official scripts.
-          See https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
+            echo -e "\e[93m[ TIP  ]\e[39m Download and configure in CRON the latest official $script_name script.
+         Alternatively, follow steps in https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
 ";
             WARNING_FLAG=`expr $WARNING_FLAG + 1`
       fi
       rm -f /tmp/scriptit.$$
    else
       echo -e "\e[91m[ FAIL ]\e[39m Official $script_name is not scheduled in CRON."
-            echo -e "\e[93m[ TIP  ]\e[39m Download and configure the latest official scripts.
-          See https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
+            echo -e "\e[93m[ TIP  ]\e[39m Download and configure in CRON the latest official $script_name script.
+         Alternatively, follow steps in https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
 ";
       FAIL_FLAG=`expr $FAIL_FLAG + 1`
    fi
