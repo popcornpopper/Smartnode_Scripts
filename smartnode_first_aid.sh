@@ -7,7 +7,7 @@
 #               Not intended for incomplete Smartnode Installations.
 #  Author : popcornpopper  . Created Feb 4, 2018
 #
-#  smartnode_health_check.sh -
+#  smartnode_first_aid.sh -
 #      Provides a robust end-to-end verification of a Smartnode.
 #      Performs the following checks:
 #         1. check_smartcashd_process - Checks if your smartcashd daemon process is running
@@ -21,9 +21,9 @@
 #
 #  INSTRUCTIONS
 #  1. Download this script :
-#         $ wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/smartnode_health_check.sh
+#         $ wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/smartnode_first_aid.sh
 #  2. This script can be ran either as root user or smartadmin user. Run below command :
-#         $ bash ./smartnode_health_check.sh
+#         $ bash ./smartnode_first_aid.sh
 #
 #
 
