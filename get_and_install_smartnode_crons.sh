@@ -67,7 +67,7 @@ echo
 echo "If you want to revert back , run below commands in the following order :
   1.  crontab /tmp/crontab.prev
   2.  rm -f /tmp/crontab.prev
-  3.  cp -p ${SMARTNODE_DIR}/smartnode_prev/*.sh  ${SMARTNODE_DIR}/smartnode
+  3.  cp -p ${SMARTNODE_DIR}/smartnode_prev/*.sh  ${SMARTNODE_DIR}/smartnode 2> /dev/null
   4.  rmdir ${SMARTNODE_DIR}/smartnode_prev/
 "
 
