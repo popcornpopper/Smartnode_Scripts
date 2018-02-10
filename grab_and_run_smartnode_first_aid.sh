@@ -12,4 +12,4 @@ wget -O /tmp/smartnode_first_aid/smartnode_first_aid.sh https://raw.githubuserco
 bash /tmp/smartnode_first_aid/smartnode_first_aid.sh | tee /tmp/smartnode_first_aid/smartnode_first_aid_report.txt
 
 echo "Smartnode First Aid Report : /tmp/smartnode_first_aid/smartnode_first_aid_report.txt"
-echo
+echo "To view the report , run the command : cat /tmp/smartnode_first_aid/smartnode_first_aid_report.txt"
