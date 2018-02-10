@@ -13,7 +13,7 @@
 #         1. check_smartcashd_process - Checks if your smartcashd daemon process is running
 #         2. check_sc_status - Checks status of your smartcashd. Runs smartcash-cli smartnode status
 #         3. check_crons - Checks all official cron scripts if you have them scheduled.
-#         4. check_cron_scripts_if_official - Checks cron scripts if they are identical to the official Smartcash Smartnode scripts 
+#         4. check_cron_scripts_if_official - Checks cron scripts if they are identical to the official Smartcash Smartnode scripts
 #         5. check_sc_port - Checks smartcashd daemon port to ensure its listening and its not blocked by internal/external firewalls.
 #         6. check_web_status - Checks smartcashd daemon port, verifies if its communicable from external internet.
 #         7. check_system_stats - Checks your server's CPU and MEMORY stats and verify if its within reasonable thresholds
@@ -27,33 +27,88 @@
 #
 
 clear
+
+############ Make sure relative paths point to base OS bin dirs
 PATH=/bin:/usr/bin:/sbin:$PATH
 export PATH
 
+############ Variable Declaration ###################
+OK_FLAG=0 ; WARNING_FLAG=0 ; FAIL_FLAG=0
+
+## TUNABLES - Change the values below per your liking
+## System Thresholds
+MEM_THRESHOLD=90              # 90%
+CPU_THRESHOLD=95              # 95%
+
+## Disk Space Thresholds
+USED_PCT_THRESHOLD=50         # 50%
+AVAIL_SIZE_THRESHOLD=12000000 # 12GB
+DEBUG_LOG_SIZE_THRESHOLD=5000 # 5000M or 5GB
+
+
 ######   FUNCTIONS
+
+convert_kb_to () {
+KB_size="$1"
+convert_to="$2"
+
+if [ "$convert_to" = "GB" ]; then perl -e "use POSIX qw(round);print round(${KB_size}/1000/1000)"; fi
+if [ "$convert_to" = "MB" ]; then perl -e "use POSIX qw(round);print round(${KB_size}/1000)"; fi
+}
+
+convert_mb_to () {
+MB_size="$1"
+convert_to="$2"
+
+if [ "$convert_to" = "GB" ]; then perl -e "use POSIX qw(round);print round(${MB_size}/1000)"; fi
+}
+
+check_debug_log () {
+
+dbglog_size="`ls -l ${SMARTCASH_HOME_DIR}/.smartcash/debug.log  |  awk '{ printf  "%3.0f\n",$5 / 1000000 }' | tr -d '\012'`"
+if [ $dbglog_size -gt ${DEBUG_LOG_SIZE_THRESHOLD} ]; then
+      echo -e "\e[91m[ FAIL ]\e[39m debug log too big (${dbglog_size}M) . "
+      echo -e "\e[93m[ TIP  ]\e[39m Quick fix , run this command: /bin/date > ${SMARTCASH_HOME_DIR}/.smartcash/debug.log
+      Long-term fix : Schedule official clearlog.sh script into CRON.
+"
+      FAIL_FLAG=`expr $FAIL_FLAG + 1`
+else  echo -e "\e[92m[  OK  ]\e[39m debug log size (${dbglog_size}M) is less than threshold (${DEBUG_LOG_SIZE_THRESHOLD}M or `convert_mb_to ${DEBUG_LOG_SIZE_THRESHOLD} GB`GB)"
+      OK_FLAG=`expr $OK_FLAG + 1`
+fi
+
+}
+
+
 check_disk_space () {
    # check_disk_space v1.2 - popcornpopper
-   FAIL=0
    IFS=\$
    for fspct in `df -k  |grep -v ^Filesystem | awk '{ print $5" "$4" "$6"\$" }' | sort -nr | tr -d '\012' `
    do
 
-   fs=`echo -n $fspct | awk '{ print $3 }' `
+   FAIL=0
    pct=`echo -n $fspct | awk '{ print $1 }' | tr -d \% `
-   size=`echo -n $fspct | awk '{ print $2 }' |tr -d ' ' `
-   if [ $pct -gt $FREE_PCT_THRESHOLD ]
+   avail_size=`echo -n $fspct | awk '{ print $2 }' |tr -d ' ' `
+   fs=`echo -n $fspct | awk '{ print $3 }' `
+   if [ $pct -gt $USED_PCT_THRESHOLD ]
    then
-      if [ $size -lt $FREE_SIZE_THRESHOLD ]
+   ## Available space cannot go below AVAIL_SIZE_THRESHOLD
+      if [ $avail_size -lt $AVAIL_SIZE_THRESHOLD ]
       then
          FAIL=1
          FAIL_TXT="$FAIL_TXT $fs $pct $size"
       fi
    fi
 
-   sizemb=`perl -e "use POSIX qw(round);print round(( $size / 1000 ))"`
+   sizemb=`convert_kb_to $avail_size MB`
+   sizegb=`convert_kb_to $avail_size GB`
+   if [ $sizemb -gt 1000 ] ;then sizedisp="${sizegb}G" ; fi
+   if [ $sizemb -le 1000 ] ;then sizedisp="${sizemb}M" ; fi
+
    if [ $FAIL -eq 1 ];then
-         echo -e "\e[91m[ FAIL ]\e[39m $fs fs has ${sizemb}M(${pct}% used)"
-   else  echo -e "\e[92m[ OK ]\e[39m $fs fs has ${sizemb}M(${pct}% used) "
+         echo -e "\e[91m[ FAIL ]\e[39m $fs fs has ${sizedisp}(${pct}% used)"
+         FAIL_FLAG=`expr $FAIL_FLAG + 1`
+   else  echo -e "\e[92m[  OK  ]\e[39m $fs fs has ${sizedisp}(${pct}% used) "
+         OK_FLAG=`expr $OK_FLAG + 1`
    fi
    done
 }
@@ -65,6 +120,8 @@ check_cmd_pattern() {
    desc="$2"
    pattern1="$3"
    prefilter="$4"
+   tip_line1="$5"
+   tip_line2="$6"
 
    if [ -z "$prefilter" ] ; then
        $command  |grep -v grep | grep -v ^\# | grep -w "${pattern1}" > /dev/null 2>&1
@@ -74,10 +131,14 @@ check_cmd_pattern() {
    ret=$?
 
    if [ $ret -eq 0 ]; then
-      echo -e "\e[92m[ OK ]\e[39m $desc : Test successful for $pattern1 " ; return 0;
+      echo -e "\e[92m[  OK  ]\e[39m $desc : Test successful for $pattern1 " ;
+      OK_FLAG=`expr $OK_FLAG + 1`
+      return 0;
    else
       echo -e "\e[91m[ FAIL ]\e[39m $desc : Test failed for  $pattern1 "
-      echo "     This test failed : $command | grep -w \"${pattern1}\"  "
+      echo -e "\e[93m[ TIP  ]\e[39m $tip
+$tip_line2"
+      FAIL_FLAG=`expr $FAIL_FLAG + 1`
       return 1
    fi
 }
@@ -88,11 +149,12 @@ check_crons () {
  else  CRONTAB_CMD="crontab -l"
  fi
 
- check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto start smartcashd after reboot is scheduled"  smartcashd reboot
- check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto upgrade script is scheduled" upgrade.sh
- check_cmd_pattern "$CRONTAB_CMD" "Check cron script to check/fix hung smartcashd is scheduled " checkdaemon.sh
- check_cmd_pattern "$CRONTAB_CMD" "Check cron script to clear debug log is scheduled"  clearlog.sh
- check_cmd_pattern "$CRONTAB_CMD" "Check cron script to auto restart smartcashd when down is scheduled"  makerun.sh
+ check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto start smartcashd after reboot is scheduled"  smartcashd reboot " When a reboot happens, you'd like smartcashd daemon to run." "     Do this by adding this line in CRON: @reboot /usr/bin/smartcashd "
+  ## Disabling below checks, since cron checks are already done at the check_cron_scripts_if_official sub routine
+  # check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto upgrade script is scheduled" upgrade.sh
+  # check_cmd_pattern "$CRONTAB_CMD" "Check cron script to check/fix hung smartcashd is scheduled " checkdaemon.sh
+  # check_cmd_pattern "$CRONTAB_CMD" "Check cron script to clear debug log is scheduled"  clearlog.sh
+  # check_cmd_pattern "$CRONTAB_CMD" "Check cron script to auto restart smartcashd when down is scheduled"  makerun.sh
 }
 
 
@@ -104,15 +166,16 @@ check_cmd_pattern "ps -ef" "Check if smartcashd daemon process is running" smart
 check_sc_status () {
  if [ "`whoami`" = "root" ] ; then
        echo "smartcash-cli smartnode status" > /tmp/sn.cmd.$$.txt ; chmod 755  /tmp/sn.cmd.$$.txt
-       check_cmd_pattern  "sudo su ${SMARTCASH_HOME_DIR_OWNER} -c /tmp/sn.cmd.$$.txt" "Check smartcash-cli smartnode status" "Smartnode successfully started"
+       check_cmd_pattern  "sudo su ${SMARTCASH_HOME_DIR_OWNER} -c /tmp/sn.cmd.$$.txt" "Check smartcash-cli smartnode status" "Smartnode successfully started" "successfully" "Restart smartcashd by killing its pid and running 'smartcashd'. " "       Alternatively, you may reboot your VPS, then run 'smartcashd'"
        rm -f  /tmp/sn.cmd.$$.txt
- else  check_cmd_pattern  "smartcash-cli smartnode status" "Check smartcash-cli smartnode status" "Smartnode successfully started"
+ else  check_cmd_pattern  "smartcash-cli smartnode status" "Check smartcash-cli smartnode status" "Smartnode successfully started" "successfully" "Restart smartcashd by killing its pid and running 'smartcashd'. " "       Alternatively, you may reboot your VPS, then run 'smartcashd'"
  fi
 }
 
 check_sc_port () {
-  check_cmd_pattern "$SUDO iptables -L" "Check if your network allows inbound traffic to SN port" "dpt:9678" "ACCEPT"
   check_cmd_pattern 'netstat -an' "Check if SN daemon port is listening" "9678" "LISTEN"
+  ### disabling this check .. for advanced users.. if the check below fails .. means check_ddos.sh script was not run yet.
+  #check_cmd_pattern "$SUDO iptables -L" "Check if your network allows inbound traffic to SN port" "dpt:9678" "ACCEPT"
 }
 
 get_pub_ip() {
@@ -135,8 +198,11 @@ check_system_stats() {
    mpct=`perl -e "use POSIX qw(round);print round(100*( $mavail / $mtotal ))"`
 
    if [ $mpct -lt $MEM_THRESHOLD ]; then
-     echo -e "\e[92m[ OK ]\e[39m Mem usage ${mpct}% under threshold(${MEM_THRESHOLD}%)"
+        echo -e "\e[92m[  OK  ]\e[39m Mem usage ${mpct}% under threshold(${MEM_THRESHOLD}%)"
+        OK_FLAG=`expr $OK_FLAG + 1`
    else echo -e "\e[91m[ FAIL ]\e[39m Mem usage ${mpct}% above threshold(${MEM_THRESHOLD}%)"
+        echo -e "\e[93m[ TIP  ]\e[39m Kill some non-smartcashd processes. Reboot may help release un-needed processes.
+"
    fi
 
    cpua=0
@@ -147,8 +213,12 @@ check_system_stats() {
      cpuavg=`perl -e "use POSIX qw(round);print 100-round(( $cpua / 5 ))"`
 
    if [ $cpuavg -lt $CPU_THRESHOLD ]; then
-        echo -e "\e[92m[ OK ]\e[39m CPU usage ${cpuavg}% under threshold(${CPU_THRESHOLD}%)"
+        echo -e "\e[92m[  OK  ]\e[39m CPU usage ${cpuavg}% under threshold(${CPU_THRESHOLD}%)"
+        OK_FLAG=`expr $OK_FLAG + 1`
    else echo -e "\e[91m[ FAIL ]\e[39m CPU usage ${cpuavg}% above threshold(${CPU_THRESHOLD}%)"
+        echo -e "\e[93m[ TIP  ]\e[39m Smartcashd daemon maybe synching , this can  be verified in the debug log.
+         Perform Reboot of server if very high CPU condition persists, this helps release possibly hung processes.
+"
    fi
 
 }
@@ -166,7 +236,6 @@ download_official_script () {
   rm -f ${TMPDIR}/${script_name} 2> /dev/null
   wget -O ${TMPDIR}/${script_name} https://raw.githubusercontent.com/SmartCash/smartnode/master/${script_name} > /dev/null 2>&1
 }
-
 
 get_cron_script_fname () {
   script_name="$1"
@@ -189,12 +258,20 @@ scriptit_and_run() {
       sh /tmp/scriptit.$$ >/dev/null 2>&1
 
       if [ $? -eq 0 ]; then
-            echo -e "\e[92m[ OK ]\e[39m Cron script $script_name is identical with official script" ;
+            echo -e "\e[92m[  OK  ]\e[39m Cron script $script_name is identical with official script" ;
+            OK_FLAG=`expr $OK_FLAG + 1`
       else  echo -e "\e[95m[ WARNING ]\e[39m Cron script $script_name is different from the official script" ;
+            echo -e "\e[93m[ TIP  ]\e[39m Download and configure the latest official scripts.
+         See http://smartnodes.cc/#SmartNode_Setup (\"Stability\" section)"
+            WARNING_FLAG=`expr $WARNING_FLAG + 1`
       fi
       rm -f /tmp/scriptit.$$
    else
       echo -e "\e[91m[ FAIL ]\e[39m Official $script_name is not scheduled in CRON"
+            echo -e "\e[93m[ TIP  ]\e[39m Download and configure the latest official scripts.
+         See http://smartnodes.cc/#SmartNode_Setup (\"Stability\" section)
+";
+      FAIL_FLAG=`expr $FAIL_FLAG + 1`
    fi
 }
 
@@ -211,15 +288,6 @@ scriptit_and_run upgrade.sh
 }
 
 ############## MAIN Routine #############
-## TUNABLES
-## System Thresholds
-MEM_THRESHOLD=90
-CPU_THRESHOLD=95
-
-## Disk Space Thresholds
-FREE_PCT_THRESHOLD=50
-FREE_SIZE_THRESHOLD=12000000  # 12GB
-
 ###### Detect if this smartcashd was installed as root user or smartadmin
 SMARTCASH_HOME_DIR="`smartcash_homedir`"
 if [ -z "$SMARTCASH_HOME_DIR" ]; then echo "ERROR: Unable to locate Smartcash Application directory. "; exit 1; fi
@@ -236,16 +304,17 @@ fi
 
 echo -e "
 \e[30m\e[103m    SmartNode Health Check Analysis report v1.0   \e[49m\e[39m
-----------------------------------------------"
-if [ "`whoami`" = "smartadmin" ]; then echo "NOTE: smartadmin user detected , you maybe prompted for sudo password to run iptables command"; fi
-echo
+----------------------------------------------
+NOTE: This script is designed for Smartnodes that are fully configured and has achieved ENABLED status previously.
+"
 
 echo "
 ########## Performing Smartcashd Tests ##################
 "
 check_smartcashd_process
+check_debug_log
 check_sc_status
-#check_crons
+check_crons
 check_cron_scripts_if_official
 
 echo "
@@ -255,12 +324,35 @@ check_system_stats
 check_sc_port
 check_web_status
 
+DEBUG_LOG_SIZE_GB_THRESHOLD="`perl -e \"use POSIX qw(round);print round(${DEBUG_LOG_SIZE_THRESHOLD}/1000)\"`"
+AVAIL_SIZE_GB_THRESHOLD="`perl -e \"use POSIX qw(round);print round(${AVAIL_SIZE_THRESHOLD}/1000/1000)\"`"
 echo "
 ########## Performing Disk Space Checks ##################"
-echo "Thresholds : Must be < ${FREE_PCT_THRESHOLD}% used + free space >12GB
-"
 check_disk_space
 
+
+echo -e "
+########## RESULTS ##################
+
+\e[92m OK      : ${OK_FLAG}\e[39m
+\e[95m WARNING : ${WARNING_FLAG}\e[39m
+\e[91m FAIL    : ${FAIL_FLAG}\e[39m
+
+#### Thresholds #
+Memory Utilization Threshold  : Must not go beyond ${MEM_THRESHOLD}%
+CPU Utilization  Threshold    : Must not go beyond ${CPU_THRESHOLD}%
+
+Disk Space % Used Threshold   : Must not go beyond ${USED_PCT_THRESHOLD}%
+Disk Space Available Threshold: Must not go below ${AVAIL_SIZE_GB_THRESHOLD}G
+Debug Log size Threshold      : Must not go beyond ${DEBUG_LOG_SIZE_GB_THRESHOLD}G
+
+"
+
+
+if [ $FAIL_FLAG -eq 0 ]
+then
+    echo -e "\e[92m Congratulations ! Your Smartnode has passed all tests.\e[39m"
+fi
 
 echo -e "
 Author :\e[44m popcornpopper \e[49m\e[39m "
