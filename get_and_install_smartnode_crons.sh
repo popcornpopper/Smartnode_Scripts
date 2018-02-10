@@ -7,8 +7,8 @@
 # INSTRUCTIONS , run below commands:
 #   1. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/get_and_install_smartnode_crons.sh
 #   2. sh get_and_install_smartnode_crons.sh [SmartNode Directory] .
-#      - If you installed smartnode with smartadmin, your command will be : sh get_and_install_smartnode_crons.sh "/home/smartadmin"
-#      - If you installed using bash installer , your command will be : sh get_and_install_smartnode_crons.sh "/home/smartadmin"
+#      - If you installed smartnode with smartadmin, your command will be : bash get_and_install_smartnode_crons.sh "/home/smartadmin"
+#      - If you installed using bash installer , your command will be : bash get_and_install_smartnode_crons.sh "/"
 #
 # Author : popcornpopper
 # Created: Feb 10, 2018
