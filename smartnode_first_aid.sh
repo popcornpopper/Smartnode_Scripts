@@ -25,7 +25,7 @@
 #  2. This script can be ran either as root user or smartadmin user. Run below command :
 #         $ bash ./smartnode_health_check.sh
 #
-#  
+#
 
 clear
 
@@ -150,7 +150,7 @@ check_crons () {
  else  CRONTAB_CMD="crontab -l "
  fi
 
- check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto start smartcashd after reboot is scheduled"  smartcashd reboot "When a reboot happens, you'd like smartcashd daemon to run." "Do this by adding this line in CRON: @reboot /usr/bin/smartcashd "
+ check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto start smartcashd after reboot is scheduled"  smartcashd reboot "Add this line in CRON: @reboot /usr/bin/smartcashd." "Alternatively, see https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh "
   ## Disabling below checks, since cron checks are already done at the check_cron_scripts_if_official sub routine
   # check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto upgrade script is scheduled" upgrade.sh
   # check_cmd_pattern "$CRONTAB_CMD" "Check cron script to check/fix hung smartcashd is scheduled " checkdaemon.sh
@@ -263,28 +263,15 @@ scriptit_and_run() {
             OK_FLAG=`expr $OK_FLAG + 1`
       else  echo -e "\e[95m[ WARNING ]\e[39m Cron script $script_name is different from the official script. $script_name is scheduled in CRON" ;
             echo -e "\e[93m[ TIP  ]\e[39m Download and configure the latest official scripts.
-         You may use my open source script to download and setup the latest official scripts:
-         1. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/get_and_install_smartnode_crons.sh
-         2. sh get_and_install_smartnode_crons.sh [Smartcash directory]
-            If you used the bash installer your command will be:
-            sh get_and_install_smartnode_crons.sh /
-
-            If you used the guide with smartadmin user , your command will be:
-            sh get_and_install_smartnode_crons.sh /home/smartadmin ";
+          See https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
+";
             WARNING_FLAG=`expr $WARNING_FLAG + 1`
       fi
       rm -f /tmp/scriptit.$$
    else
       echo -e "\e[91m[ FAIL ]\e[39m Official $script_name is not scheduled in CRON."
             echo -e "\e[93m[ TIP  ]\e[39m Download and configure the latest official scripts.
-         You may use my open source script to download and setup the latest official scripts:
-         1. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/get_and_install_smartnode_crons.sh
-         2. sh get_and_install_smartnode_crons.sh [Smartcash directory]
-            If you used the bash installer your command will be:
-            sh get_and_install_smartnode_crons.sh /
-
-            If you used the guide with smartadmin user , your command will be:
-            sh get_and_install_smartnode_crons.sh /home/smartadmin
+          See https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
 ";
       FAIL_FLAG=`expr $FAIL_FLAG + 1`
    fi
