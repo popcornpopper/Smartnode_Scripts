@@ -29,16 +29,16 @@ then
    exit 99
 fi
 
+## If they exist, make backup of ${SMARTNODE_DIR}/smartnode and original cron scheds. User can revert back to these if needed.
+if [ ! -d ${SMARTNODE_DIR}/smartnode_prev ]; then cp -Rp ${SMARTNODE_DIR}/smartnode ${SMARTNODE_DIR}/smartnode_prev; fi
+if [ ! -f /tmp/crontab.prev ]; then crontab -l > /tmp/crontab.prev ; fi
+
+## Prepwork
 mkdir -p ${SMARTNODE_DIR}/smartnode
 rm -f ${SMARTNODE_DIR}/smartnode/makerun.sh
 rm -f ${SMARTNODE_DIR}/smartnode/checkdaemon.sh
 rm -f ${SMARTNODE_DIR}/smartnode/upgrade.sh
 rm -f ${SMARTNODE_DIR}/smartnode/clearlog.sh
-
-
-## Make backup of original config and original cron scheds
-if [ ! -d ${SMARTNODE_DIR}/smartnode_prev ]; then cp -Rp ${SMARTNODE_DIR}/smartnode ${SMARTNODE_DIR}/smartnode_prev; fi
-if [ ! -f /tmp/crontab.prev ]; then crontab -l > /tmp/crontab.prev ; fi
 
 # Downloading the official smartnode maintenance scripts 
 wget -O ${SMARTNODE_DIR}/smartnode/makerun.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/makerun.sh 2>/dev/null
