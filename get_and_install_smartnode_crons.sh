@@ -1,14 +1,18 @@
 #!/bin/bash
 #
-# setup_cron_scripts.sh
+# get_and_install_smartnode_crons.sh
 #
 #    Download all official Smartcash Smartnode maintenance scripts, then schedule them into CRON scheduler.
 #
 # INSTRUCTIONS , run below commands:
 #   1. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/get_and_install_smartnode_crons.sh
-#   2. sh get_and_install_smartnode_crons.sh [SmartNode Directory] . i.e. sh get_and_install_smartnode_crons.sh "/home/smartadmin"
+#   2. sh get_and_install_smartnode_crons.sh [SmartNode Directory] .
+#      - If you installed smartnode with smartadmin, your command will be : sh get_and_install_smartnode_crons.sh "/home/smartadmin"
+#      - If you installed using bash installer , your command will be : sh get_and_install_smartnode_crons.sh "/home/smartadmin"
 #
-# By: popcornpopper
+# Author : popcornpopper
+# Created: Feb 10, 2018
+#
 
 if [ $# -ne 1 ]
 then
@@ -21,7 +25,7 @@ SMARTNODE_DIR="$1"
 ## Make sure Smartnode DIR exists
 if [ ! -s ${SMARTNODE_DIR}/.smartcash/smartcash.conf ]
 then
-   echo "ERROR: Unable to determine smartcashd. Unable to locate ${SMARTNODE_DIR}/.smartcash/smartcash.conf  . "
+   echo "ERROR: Invalid Smartnode directory ${SMARTNODE_DIR}. "
    exit 99
 fi
 
@@ -36,15 +40,17 @@ rm -f ${SMARTNODE_DIR}/smartnode/clearlog.sh
 if [ ! -d ${SMARTNODE_DIR}/smartnode_prev ]; then cp -Rp ${SMARTNODE_DIR}/smartnode ${SMARTNODE_DIR}/smartnode_prev; fi
 if [ ! -f /tmp/crontab.prev ]; then crontab -l > /tmp/crontab.prev ; fi
 
-# Download the appropriate scripts
-
+# Downloading the official smartnode maintenance scripts 
 wget -O ${SMARTNODE_DIR}/smartnode/makerun.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/makerun.sh 2>/dev/null
 wget -O ${SMARTNODE_DIR}/smartnode/checkdaemon.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/checkdaemon.sh 2>/dev/null
 wget -O ${SMARTNODE_DIR}/smartnode/upgrade.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/upgrade.sh 2>/dev/null
 wget -O ${SMARTNODE_DIR}/smartnode/clearlog.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/clearlog.sh 2>/dev/null
 
 
+## Giving the scripts locked down read, write and execute permissions
 chmod 700 ${SMARTNODE_DIR}/smartnode/*.sh
+
+## Below will create a temp file to store the smartnode cron scripts
 echo "
 @reboot /usr/bin/smartcashd > /tmp/start_at_reboot.out 2>&1
 
@@ -55,9 +61,10 @@ echo "
 
 " > /tmp/smartnode.crontabs
 
-
+## Applying the smartnode cron scripts into CRON scheduler
 crontab /tmp/smartnode.crontabs
 
+## No longer need the temp file
 rm -f /tmp/smartnode.crontabs
 
 echo
