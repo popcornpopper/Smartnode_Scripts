@@ -226,7 +226,7 @@ check_system_stats() {
 }
 
 smartcash_homedir () {
-  smartcash_dir=`ls -1d /.smartcash /home/smartadmin/.smartcash ./smartcash 2> /dev/null`
+  smartcash_dir=`ls -1d /root/.smartcash /home/smartadmin/.smartcash /.smartcash 2> /dev/null`
   dirname $smartcash_dir | tr -d '\012'
 }
 
