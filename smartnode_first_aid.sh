@@ -226,8 +226,12 @@ check_system_stats() {
 }
 
 smartcash_homedir () {
-  smartcash_dir=`ls -1d /root/.smartcash /home/smartadmin/.smartcash /.smartcash 2> /dev/null`
-  dirname $smartcash_dir | tr -d '\012'
+
+  smartcash_conf=`ls -1d /root/.smartcash/smartcash.conf /home/smartadmin/.smartcash/smartcash.conf /.smartcash/smartcash.conf 2> /dev/null | awk '{ print $1 }' `
+  smartcash_dir=`dirname $smartcash_conf 2> /dev/null`
+  smartcash_base=`dirname $smartcash_dir | tr -d '\012'`
+  echo  -n "$smartcash_base"
+
 }
 
 
