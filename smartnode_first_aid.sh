@@ -274,7 +274,7 @@ scriptit_and_run() {
       fi
       rm -f /tmp/scriptit.$$
    else
-      echo -e "\e[91m[ FAIL ]\e[39m Official $script_name is not scheduled in CRON."
+      echo -e "\e[91m[ FAIL ]\e[39m Official $script_name script is not scheduled in CRON."
             echo -e "\e[93m[ TIP  ]\e[39m Download and configure in CRON the latest official $script_name script.
          Alternatively, follow steps in https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
 ";
