@@ -2,7 +2,7 @@
 #
 #  Smartnode First Aid v1.0
 #
-#  This script helps to quickly determine the root cause of Smartnode issues. Provides tips on how to resolve issues.
+#  This script helps to quickly determine the root cause of Smartnode issues.
 #  Assumptions: This script is intended to be run on a completely configured Smartnode.
 #               Not intended for incomplete Smartnode Installations.
 #  Author : popcornpopper  . Created Feb 4, 2018
@@ -18,6 +18,7 @@
 #         6. check_web_status - Checks smartcashd daemon port, verifies if its communicable from external internet.
 #         7. check_system_stats - Checks your server's CPU and MEMORY stats and verify if its within reasonable thresholds
 #         8. check_disk_space - Checks each filesystem is within space thresholds ( default : not less than 50% used ; free space > 12GB )
+#         9. check_debug_log -  Verifies the space usage of your debug log. Provides tips how to clear it and long term fix
 #
 #  INSTRUCTIONS
 #  1. Download this script :
@@ -68,7 +69,7 @@ check_debug_log () {
 
 dbglog_size="`ls -l ${SMARTCASH_HOME_DIR}/.smartcash/debug.log  |  awk '{ printf  "%3.0f\n",$5 / 1000000 }' | tr -d '\012'`"
 if [ $dbglog_size -gt ${DEBUG_LOG_SIZE_THRESHOLD} ]; then
-      echo -e "\e[91m[ FAIL ]\e[39m debug log too big (${dbglog_size}M) . "
+      echo -e "\e[91m[ FAIL ]\e[39m debug log too big (${dbglog_size}M), more than threshold size (${DEBUG_LOG_SIZE_THRESHOLD}M or `convert_mb_to ${DEBUG_LOG_SIZE_THRESHOLD} GB`GB) . "
       echo -e "\e[93m[ TIP  ]\e[39m Quick fix , run this command: /bin/date > ${SMARTCASH_HOME_DIR}/.smartcash/debug.log
       Long-term fix : Schedule official clearlog.sh script into CRON.
 "
@@ -306,7 +307,7 @@ else SUDO=""
 fi
 
 echo -e "
-\e[30m\e[103m    SmartNode First Aid Analysis report v1.0   \e[49m\e[39m
+\e[30m\e[103m    SmartNode First Aid Analysis report v1.0 by\e[91m popcornpopper \e[39m \e[49m\e[39m
 ----------------------------------------------
 NOTE: This script is designed for Smartnodes that are fully configured and has achieved ENABLED status previously.
 "
