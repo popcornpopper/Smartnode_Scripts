@@ -314,6 +314,8 @@ echo -e "
 \e[30m\e[103m    SmartNode First Aid Analysis report v1.0 by\e[91m popcornpopper \e[39m \e[49m\e[39m
 ----------------------------------------------
 NOTE: This script is designed for Smartnodes that are fully configured and has achieved ENABLED status previously.
+
+Your Smartcash App Dir (detected): ${SMARTCASH_HOME_DIR}/.smartcash
 "
 
 echo "
