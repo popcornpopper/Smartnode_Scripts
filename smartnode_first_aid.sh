@@ -182,7 +182,7 @@ check_sc_port () {
 
 get_pub_ip() {
    # get_pub_ip v1.0 - popcornpopper
-   /sbin/ifconfig |grep 'inet addr' |grep -v 127.0.0.1 | awk '{ print $2 }' |awk -F: '{ print $2 }' | tr -d '\012'
+   /sbin/ifconfig |grep 'inet addr' |grep -v 127.0.0 | awk '{ print $2 }' |awk -F: '{ print $2 }' | tr -d '\012'
 }
 
 check_web_status() {
