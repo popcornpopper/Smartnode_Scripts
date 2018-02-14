@@ -150,8 +150,8 @@ check_crons () {
        CRONTAB_CMD="cat /var/spool/cron/crontabs/${SMARTCASH_HOME_DIR_OWNER}";
  else  CRONTAB_CMD="crontab -l "
  fi
-
- check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto start smartcashd after reboot is scheduled"  smartcashd reboot "Add this line in CRON: @reboot /usr/bin/smartcashd" "Alternatively, see https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh "
+  ## disabling check below, since makerun.sh will take care of smartcashd upon reboot. ( 1 minute later tho )
+  #check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto start smartcashd after reboot is scheduled"  smartcashd reboot "Add this line in CRON: @reboot /usr/bin/smartcashd" "Alternatively, see https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh "
   ## Disabling below checks, since cron checks are already done at the check_cron_scripts_if_official sub routine
   # check_cmd_pattern "$CRONTAB_CMD" "Check cron script for auto upgrade script is scheduled" upgrade.sh
   # check_cmd_pattern "$CRONTAB_CMD" "Check cron script to check/fix hung smartcashd is scheduled " checkdaemon.sh
@@ -324,7 +324,7 @@ echo "
 check_smartcashd_process
 check_debug_log
 check_sc_status
-check_crons 2> /dev/null ## 2> /dev/null to suppress warnings when there's blank cron entries
+### Disabling - check_crons 2> /dev/null ## 2> /dev/null to suppress warnings when there's blank cron entries
 check_cron_scripts_if_official
 
 echo "
