@@ -18,6 +18,7 @@ SMARTCASH_CONF="`ls -1d ~/.smartcash/smartcash.conf`"
 SMARTCASH_DIR="`dirname $SMARTCASH_CONF`"
 SMARTCASH_BASE="`dirname $SMARTCASH_DIR`"
 
+CURRENT_USER="`whoami`"
 ## Make sure Smartnode DIR exists
 if [ ! -s ${SMARTCASH_BASE}/.smartcash/smartcash.conf ]
 then
@@ -31,14 +32,24 @@ else
    echo "OK : detected ${SMARTCASH_DIR} as your smartcash top directory"
    echo "OK : detected ${SMARTCASH_BASE} as your smartcash base directory"
    echo
-   echo "Using account `whoami` to cron-schedule the official Smartcash Smartnode Scripts"
+   echo "Using account $CURRENT_USER to cron-schedule the official Smartcash Smartnode Scripts"
    echo
 fi
 
 echo "
-To proceed with downloading and scheduling Smartcash's official Smartnode scripts,
+To proceed with downloading and scheduling Smartcash's official Smartnode scripts into CRON , then
+give ${CURRENT_USER} sudo nopasswd (non-interactive) privilege ( smartcashd upgrade scripts requires root privs ).
+
 please press ENTER key, to cancel press CTRL-C"
 read go_no_go
+
+
+## Add user to sudoers if not there yet. Using NOPASSWD , so sudo upgrade.sh will be non-interactive
+if [ ! -f /etc/sudoers.prev ]; then sudo cp -p /etc/sudoers /etc/sudoers.prev ; fi
+sudo grep -v ^${CURRENT_USER} /etc/sudoers > /tmp/tmp.sudoers
+sudo echo "${CURRENT_USER} ALL=(ALL) NOPASSWD: ALL" >> /tmp/tmp.sudoers
+sudo cp /tmp/tmp.sudoers /etc/sudoers
+sudo rm -f /tmp/tmp.sudoers
 
 ## If they exist, make backup of ${SMARTCASH_BASE}/smartnode and original cron scheds. User can revert back to these if needed.
 if [ ! -d ${SMARTCASH_BASE}/smartnode_prev -a -d ${SMARTCASH_BASE}/smartnode ]; then cp -Rp ${SMARTCASH_BASE}/smartnode ${SMARTCASH_BASE}/smartnode_prev; fi
@@ -67,7 +78,7 @@ echo "
 
 */1 * * * * ${SMARTCASH_BASE}/smartnode/makerun.sh > /tmp/makerun.sh.out 2>&1
 */30 * * * * ${SMARTCASH_BASE}/smartnode/checkdaemon.sh > /tmp/checkdaemon.sh.out 2>&1
-*/120 * * * * ${SMARTCASH_BASE}/smartnode/upgrade.sh > /tmp/upgrade.sh.out 2>&1
+*/120 * * * * /usr/bin/sudo ${SMARTCASH_BASE}/smartnode/upgrade.sh > /tmp/upgrade.sh.out 2>&1
 0 8,20 * * * ${SMARTCASH_BASE}/smartnode/clearlog.sh > /tmp/clearlog.sh.out 2>&1
 
 " > /tmp/smartnode.crontabs
@@ -88,3 +99,6 @@ echo "If you want to revert back , run below commands in the following order :
   3.  mv ${SMARTCASH_BASE}/smartnode_prev/*.sh  ${SMARTCASH_BASE}/smartnode 2> /dev/null
   4.  rmdir ${SMARTCASH_BASE}/smartnode_prev/
 "
+
+echo "Below are your newly install CRON scripts:"
+crontab -l
