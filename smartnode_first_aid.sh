@@ -251,7 +251,7 @@ get_cron_script_fname () {
   else  CRONTAB_CMD="crontab -l "
   fi
 
-  ${CRONTAB_CMD} | grep -v "^\#" | grep -w "$script_name" | awk '{ print $6 }'
+  ${CRONTAB_CMD} | grep -v "^\#" | grep -w "$script_name" | sed 's/\/usr\/bin\/sudo//g' | sed 's/sudo//g'  | awk '{ print $6 }'
 }
 
 scriptit_and_run() {
