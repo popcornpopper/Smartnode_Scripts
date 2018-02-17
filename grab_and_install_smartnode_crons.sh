@@ -98,6 +98,7 @@ echo "If you want to revert back , run below commands in the following order :
   2.  rm -f /tmp/crontab.prev
   3.  mv ${SMARTCASH_BASE}/smartnode_prev/*.sh  ${SMARTCASH_BASE}/smartnode 2> /dev/null
   4.  rmdir ${SMARTCASH_BASE}/smartnode_prev/
+  5.  sudo mv /etc/sudoers.prev /etc/sudoers
 "
 
 echo "Below are your newly install CRON scripts:"
