@@ -48,11 +48,13 @@ if [ ! -f /tmp/crontab.prev ]; then crontab -l > /tmp/crontab.prev ; fi
 mkdir -p ${SMARTCASH_BASE}/smartnode
 rm -f ${SMARTCASH_BASE}/smartnode/makerun.sh
 rm -f ${SMARTCASH_BASE}/smartnode/checkdaemon.sh
+rm -f ${SMARTCASH_BASE}/smartnode/upgrade.sh
 rm -f ${SMARTCASH_BASE}/smartnode/clearlog.sh
 
 # Downloading the official smartnode maintenance scripts
 wget -O ${SMARTCASH_BASE}/smartnode/makerun.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/makerun.sh 2>/dev/null
 wget -O ${SMARTCASH_BASE}/smartnode/checkdaemon.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/checkdaemon.sh 2>/dev/null
+wget -O ${SMARTCASH_BASE}/smartnode/upgrade.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/upgrade.sh 2>/dev/null
 wget -O ${SMARTCASH_BASE}/smartnode/clearlog.sh https://raw.githubusercontent.com/SmartCash/smartnode/master/clearlog.sh 2>/dev/null
 
 
@@ -65,6 +67,7 @@ echo "
 
 */1 * * * * ${SMARTCASH_BASE}/smartnode/makerun.sh > /tmp/makerun.sh.out 2>&1
 */30 * * * * ${SMARTCASH_BASE}/smartnode/checkdaemon.sh > /tmp/checkdaemon.sh.out 2>&1
+*/120 * * * * ${SMARTCASH_BASE}/smartnode/upgrade.sh > /tmp/upgrade.sh.out 2>&1
 0 8,20 * * * ${SMARTCASH_BASE}/smartnode/clearlog.sh > /tmp/clearlog.sh.out 2>&1
 
 " > /tmp/smartnode.crontabs
