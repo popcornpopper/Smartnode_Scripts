@@ -227,7 +227,11 @@ check_system_stats() {
 
 smartcash_homedir () {
 
-  smartcash_conf=`ls -1d /root/.smartcash/smartcash.conf  /.smartcash/smartcash.conf  /home/smartadmin/.smartcash/smartcash.conf 2> /dev/null | tr '\012' ' '| awk '{ print $1 }' `
+  if [ "`whoami`" = "root" ]; then
+         smartcash_conf="`ls -1d /root/.smartcash/smartcash.conf`"
+  else   smartcash_conf="`ls -1d /home/smartadmin/.smartcash/smartcash.conf`"
+  fi
+
   smartcash_dir=`dirname $smartcash_conf 2> /dev/null`
   smartcash_base=`dirname $smartcash_dir | tr -d '\012'`
   echo  -n "$smartcash_base"
@@ -296,7 +300,7 @@ scriptit_and_run upgrade.sh
 
 ############## MAIN Routine #############
 ###### Detect if this smartcashd was installed as root user or smartadmin
-SMARTCASH_HOME_DIR="`smartcash_homedir`"
+SMARTCASH_HOME_DIR="`smartcash_homedir 2>/dev/null`"
 if [ -z "$SMARTCASH_HOME_DIR" ]; then echo "ERROR: Unable to locate Smartcash Application directory. "; exit 1; fi
 SMARTCASH_HOME_DIR_OWNER="`ls -ld $SMARTCASH_HOME_DIR|head -1 | awk '{ print $3 }' | tr -d '\012'`"
 
