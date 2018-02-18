@@ -5,8 +5,9 @@
 #    Download all official Smartcash Smartnode maintenance scripts, then schedule them into CRON scheduler.
 #
 # INSTRUCTIONS , run below commands:
-#   1. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
-#   2. bash grab_and_install_smartnode_crons.sh
+#   1. rm -f grab_and_install_smartnode_crons.sh 2> /dev/null
+#   2. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
+#   3. bash grab_and_install_smartnode_crons.sh
 #
 # Author : popcornpopper
 # Created: Feb 10, 2018
@@ -14,13 +15,13 @@
 
 clear
 
-SMARTCASH_CONF="`ls -1d ~/.smartcash/smartcash.conf`"
-SMARTCASH_DIR="`dirname $SMARTCASH_CONF`"
-SMARTCASH_BASE="`dirname $SMARTCASH_DIR`"
+SMARTCASH_CONF="`ls -1d ~/.smartcash/smartcash.conf 2> /dev/null`"
+SMARTCASH_DIR="`dirname $SMARTCASH_CONF 2> /dev/null`"
+SMARTCASH_BASE="`dirname $SMARTCASH_DIR 2> /dev/null`"
 
 CURRENT_USER="`whoami`"
 ## Make sure Smartnode DIR exists
-if [ ! -s ${SMARTCASH_BASE}/.smartcash/smartcash.conf ]
+if [ ! -f ${SMARTCASH_BASE}/.smartcash/smartcash.conf ]
 then
    echo
    echo "ERROR: Unable to locate Smartnode base directory . ${SMARTCASH_BASE}/.smartcash does not exist.
@@ -72,13 +73,16 @@ wget -O ${SMARTCASH_BASE}/smartnode/clearlog.sh https://raw.githubusercontent.co
 ## Giving the scripts locked down read, write and execute permissions
 chmod 700 ${SMARTCASH_BASE}/smartnode/*.sh
 
+SUDO=""
+if [ "`whoami`" != "root" ]; then SUDO="/usr/bin/sudo" ;fi
+
 ## Below will create a temp file to store the smartnode cron scripts
 echo "
 @reboot /usr/bin/smartcashd > /tmp/start_at_reboot.out 2>&1
 
 */1 * * * * ${SMARTCASH_BASE}/smartnode/makerun.sh > /tmp/makerun.sh.out 2>&1
 */30 * * * * ${SMARTCASH_BASE}/smartnode/checkdaemon.sh > /tmp/checkdaemon.sh.out 2>&1
-*/120 * * * * /usr/bin/sudo ${SMARTCASH_BASE}/smartnode/upgrade.sh > /tmp/upgrade.sh.out 2>&1
+*/120 * * * * ${SUDO} ${SMARTCASH_BASE}/smartnode/upgrade.sh > /tmp/upgrade.sh.out 2>&1
 0 8,20 * * * ${SMARTCASH_BASE}/smartnode/clearlog.sh > /tmp/clearlog.sh.out 2>&1
 
 " > /tmp/smartnode.crontabs
