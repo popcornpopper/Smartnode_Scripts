@@ -290,12 +290,12 @@ check_cron_scripts_if_official () {
 download_official_script clearlog.sh
 download_official_script checkdaemon.sh
 download_official_script makerun.sh
-download_official_script upgrade.sh
+## download_official_script upgrade.sh  ## Excluding upgrade.sh script checks 
 
 scriptit_and_run clearlog.sh
 scriptit_and_run makerun.sh
 scriptit_and_run checkdaemon.sh
-scriptit_and_run upgrade.sh
+## scriptit_and_run upgrade.sh
 }
 
 ############## MAIN Routine #############
