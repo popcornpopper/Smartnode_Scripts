@@ -82,7 +82,7 @@ echo "
 
 */1 * * * * ${SMARTCASH_BASE}/smartnode/makerun.sh > /tmp/makerun.sh.out 2>&1
 */30 * * * * ${SMARTCASH_BASE}/smartnode/checkdaemon.sh > /tmp/checkdaemon.sh.out 2>&1
-*/120 * * * * ${SUDO} ${SMARTCASH_BASE}/smartnode/upgrade.sh > /tmp/upgrade.sh.out 2>&1
+#* * */1 * * ${SUDO} ${SMARTCASH_BASE}/smartnode/upgrade.sh > /tmp/upgrade.sh.out 2>&1
 0 8,20 * * * ${SMARTCASH_BASE}/smartnode/clearlog.sh > /tmp/clearlog.sh.out 2>&1
 
 " > /tmp/smartnode.crontabs
