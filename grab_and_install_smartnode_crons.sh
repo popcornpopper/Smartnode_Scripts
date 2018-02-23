@@ -9,6 +9,10 @@
 #   2. wget https://raw.githubusercontent.com/popcornpopper/Smartnode_Scripts/master/grab_and_install_smartnode_crons.sh
 #   3. bash grab_and_install_smartnode_crons.sh
 #
+# NOTE : Feb 23,'18 
+#   - Due to recent upgrade issues reported, I've set the Upgrade script to become disabled . 
+#   - I recommend users to upgrade manually, since both Desktop Wallet and the VPS Smartcashd daemon, needs to run on the same version
+#
 # Author : popcornpopper
 # Created: Feb 10, 2018
 #
